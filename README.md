@@ -22,7 +22,7 @@ when your archives have a significant size they can benefit of a faster download
     https://my-other-public-domain.com/path/theother.tgz
     EOF
 
-    $ pack build my-app --builder heroku/buildpacks:20 --buildpack fagiani/s3-tarball-buildpack \
+    $ pack build my-app --builder heroku/buildpacks:20 --buildpack fagiani/s3-tarball@0.1.0 \
       --env AWS_ACCESS_KEY_ID=AKIA000000000000000 --env AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxx ...
 
 > Alternatively you can use `S3_AWS_ACCESS_KEY_ID` and `S3_AWS_SECRET_ACCESS_KEY` to avoid IAM
