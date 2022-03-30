@@ -1,53 +1,50 @@
-# S3 Tarball Buildpack
+# S3 Tarball Cloud Native Buildpack
 
-This is a [Heroku Buildpack](https://devcenter.heroku.com/articles/buildpacks)
+This is a [Cloud Native Buildpack](https://buildpacks.io/docs/concepts/components/buildpack/)
 that can download tarballs from private [Amazon S3](http://aws.amazon.com/s3/)
-buckets. It gives you a way of deploying pre-built code to
-[Heroku](http://www.heroku.com/) without making it publicly accessible.
+buckets. It gives you a way of adding private files outside the main git repository such
+as certificates, and more complex attributes that won't fit on environment variables to
+the container at build time without making it publicly accessible.
+
+## How it works
+
+This buildpack aims to allow you to write files in build time in any path within the root application
+directory (`/app` or `/workspace` which is an alias). Therefore, with a tar archive you can achieve that
+by defining the paths desired that will be expanded when downloaded. A second optional benefit is compression
+when your archives have a significant size they can benefit of a faster download. 
 
 ## Usage
 
-    $ heroku config:add BUILDPACK_URL=https://github.com/paulhammond/s3-tarball-buildpack.git
+    $ cat <<EOF > S3file
+    s3://my-private-bucket/path/to/tarball.tgz
+    s3://my-other-bucket/path/to/somethingelse.tgz
+    http://my-public-domain.com/tarball.tgz
+    https://my-other-public-domain.com/path/theother.tgz
+    EOF
 
-    $ cat .buildpack-s3-tarballs
-    AWS_ACCESS_KEY_ID=AKIA0000000000000000
-    AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    s3://bucket/path/to/tarball.tgz
-    s3://bucket/path/to/somethingelse.tgz
+    $ pack build my-app --builder heroku/buildpacks:20 --buildpack fagiani/s3-tarball-buildpack \
+      --env AWS_ACCESS_KEY_ID=AKIA000000000000000 --env AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxx ...
+
+> Alternatively you can use `S3_AWS_ACCESS_KEY_ID` and `S3_AWS_SECRET_ACCESS_KEY` to avoid IAM
+> conflicts when using AWS containers to run `pack build`
 
 You probably want to use an [IAM key](http://aws.amazon.com/iam/) with limited
 access. This code only requires `s3:GetObject` access to files.
 
-If you don't want to check your IAM keys into revision control, you can store
-them in Heroku's config system. Keys specified in the .buildpack-s3-tarballs
-file have precedence over keys in the config system.
+In most cases you'll use this buildpack in conjunction with other buildpacks.
 
-    $ heroku config:add BUILDPACK_URL=https://github.com/paulhammond/s3-tarball-buildpack.git
-    $ heroku config:add AWS_ACCESS_KEY_ID=AKIA0000000000000000
-    $ heroku config:add AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-    $ cat .buildpack-s3-tarballs
-    s3://bucket/path/to/tarball.tgz
-
-In most cases you'll use this buildpack in conjunction with other buildpacks
-using [heroku-buildpack-multi](https://github.com/ddollar/heroku-buildpack-multi):
-
-    $ heroku config:add BUILDPACK_URL=https://github.com/ddollar/heroku-buildpack-multi.git
-
-    $ cat .buildpack-s3-tarballs
-    AWS_ACCESS_KEY_ID=AKIA0000000000000000
-    AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    s3://bucket/path/to/tarball.tgz
-
-    $ cat .buildpacks
-    https://github.com/paulhammond/s3-tarball-buildpack.git
-    https://github.com/ryandotsmith/null-buildpack.git
+> Please notice that public tarball URLs are also accepted and for that no credentials are required.
 
 ## See also
 
+  * [s3-tarball-buildpack](https://github.com/paulhammond/s3-tarball-buildpack)
   * [heroku-buildpack-vendorbinaries](https://github.com/peterkeen/heroku-buildpack-vendorbinaries)
   * [s3simple](https://github.com/paulhammond/s3simple)
   * [Heroku Slug API](https://blog.heroku.com/archives/2013/12/20/programmatically_release_code_to_heroku_using_the_platform_api)
+
+## Contributing
+
+Feel free to contribute by opening a issue or sending a PR.
 
 ## Licence
 

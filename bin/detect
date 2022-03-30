@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# bin/detect <build-dir>
-# See https://github.com/paulhammond/s3-tarball-buildpack for license and docs
 
-if [ -f $1/.buildpack-s3-tarballs ]; then
-    echo "S3Tarball"
-    exit 0
+if [[ -f S3file ]]; then
+    echo "S3 Tarball" && exit 0
 else
-    exit 1
+    echo "no" && exit 1
 fi
