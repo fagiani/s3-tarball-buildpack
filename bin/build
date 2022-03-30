@@ -79,6 +79,6 @@ while read line; do
 			error "Unknown line $line"
 			;;
 	esac
-done < .S3file
+done < S3file
 
 exit 0
