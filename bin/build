@@ -17,25 +17,31 @@ function topic() {
 # See http://github.com/paulhammond/s3simple for documentation and licence.
 s3simple() {
   local url="$1"
-  local file="${2:--}"
 
   if [ "${url:0:5}" != "s3://" ]; then
     error "Downloadable tarballs must be a s3:// compatible URL"
   fi
   local path="${url:4}"
 
-  if [ -z "${AWS_ACCESS_KEY_ID-}" ] || [ -z "${S3_AWS_ACCESS_KEY_ID-}" ]; then
+  if [[ -z "${AWS_ACCESS_KEY_ID-}" && ! -z "${S3_AWS_ACCESS_KEY_ID-}" ]]; then
+    AWS_ACCESS_KEY_ID=$S3_AWS_ACCESS_KEY_ID
+  fi
+
+  if [[ -z "${AWS_SECRET_ACCESS_KEY-}" && ! -z "${S3_AWS_SECRET_ACCESS_KEY-}" ]]; then
+    AWS_SECRET_ACCESS_KEY=$S3_AWS_SECRET_ACCESS_KEY
+  fi
+
+  if [ -z "${AWS_ACCESS_KEY_ID-}" ]; then
     error "AWS_ACCESS_KEY_ID or S3_AWS_ACCESS_KEY_ID must be set in order to download a S3 tarball"
   fi
 
-  if [ -z "${AWS_SECRET_ACCESS_KEY-}" ] || [ -z "${S3_AWS_SECRET_ACCESS_KEY-}"]; then
+  if [ -z "${AWS_SECRET_ACCESS_KEY-}" ]; then
     error "AWS_SECRET_ACCESS_KEY or S3_AWS_SECRET_ACCESS_KEY must be set in order to download a S3 tarball"
   fi
 
-  local method md5 args
+  local method md5
   method="GET"
   md5=""
-  args="-o $file"
 
   local date="$(date -u '+%a, %e %b %Y %H:%M:%S +0000')"
   local string_to_sign
@@ -43,37 +49,38 @@ s3simple() {
   local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${AWS_SECRET_ACCESS_KEY}" | openssl base64)
   local authorization="AWS ${AWS_ACCESS_KEY_ID}:${signature}"
 
-  curl $args -s -f -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"
+  curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"
+  tar -xvzf s3-tarball-buildpack-temp.tgz
+  rm -f s3-tarball-buildpack-temp-tgz
 }
 
 httpsimple() {
   local url="$1"
-  local file="${2:--}"
 
   if [ "${url:0:7}" != "http://" ] || [ "${url:0:8}" != "https://"]; then
     error "Downloadable tarballs need to be a regular URL"
   fi
 
-  local args="-o $file"
-
-  curl $args -s -f "${url}"
+  curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error "${url}"
+  tar -xvzf s3-tarball-buildpack-temp.tgz
+  rm s3-tarball-buildpack-temp.tgz
 }
 
-for e in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY S3_AWS_ACCESS_KEY_ID S3_AWS_SECRET_ACCESS_KEY; do
-  if [ -f $env_dir/$e ]; then
-    export "$e=$(cat $env_dir/$e)"
-  fi
-done
+if compgen -G "${env_dir}/*" > /dev/null; then
+ for var in ${env_dir}/*; do
+   declare "$(basename ${var})=$(<${var})"
+ done
+fi
 
 while read line; do
 	case "$line" in
 		s3://*)
 			topic "Downloading and extracting $line from S3 bucket"
-			s3simple "$line" | tar -xv
+			s3simple "$line"
 			;;
 		http*://*)
 			topic "Downloading and extracting $line from public URL"
-			httpsimple "$line" | tar -xv
+			httpsimple "$line"
 			;;
 		*)
 			error "Unknown line $line"
