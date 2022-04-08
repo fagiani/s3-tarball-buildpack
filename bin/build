@@ -74,13 +74,14 @@ fi
 
 while read line; do
 	case "$line" in
+    s3_path="${line/S3_AWS_BUCKET/"$S3_AWS_BUCKET"}"
 		s3://*)
-			topic "Downloading and extracting $line from S3 bucket"
-			s3simple "$line"
+			topic "Downloading and extracting $s3_path from S3 bucket"
+			s3simple "$s3_path"
 			;;
 		http*://*)
-			topic "Downloading and extracting $line from public URL"
-			httpsimple "$line"
+			topic "Downloading and extracting $s3_path from public URL"
+			httpsimple "$s3_path"
 			;;
 		*)
 			error "Unknown line $line"
