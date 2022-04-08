@@ -18,15 +18,19 @@ when your archives have a significant size they can benefit of a faster download
     $ cat <<EOF > S3file
     s3://my-private-bucket/path/to/tarball.tgz
     s3://my-other-bucket/path/to/somethingelse.tgz
+    s3://S3_AWS_BUCKET_NAME/path/to/somethingelse.tgz
     http://my-public-domain.com/tarball.tgz
     https://my-other-public-domain.com/path/theother.tgz
     EOF
 
-    $ pack build my-app --builder heroku/buildpacks:20 --buildpack fagiani/s3-tarball@0.1.2 \
-      --env AWS_ACCESS_KEY_ID=AKIA000000000000000 --env AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxx ...
+    $ pack build my-app --builder heroku/buildpacks:20 --buildpack fagiani/s3-tarball@0.1.3 \
+      --env AWS_ACCESS_KEY_ID=AKIA000000000000000 \
+      --env AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxx \
+      --env S3_AWS_BUCKET_NAME ...
 
 > Alternatively you can use `S3_AWS_ACCESS_KEY_ID` and `S3_AWS_SECRET_ACCESS_KEY` to avoid IAM
-> conflicts when using AWS containers to run `pack build`
+> conflicts when using AWS containers to run `pack build`. If found, `S3_AWS_BUCKET_NAME` within the `S3file`
+> will get replaced with the variable's value in case it is set.
 
 You probably want to use an [IAM key](http://aws.amazon.com/iam/) with limited
 access. This code only requires `s3:GetObject` access to files.

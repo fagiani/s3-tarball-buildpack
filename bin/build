@@ -72,6 +72,7 @@ if compgen -G "${env_dir}/*" > /dev/null; then
  done
 fi
 
+sed -i "s/S3_AWS_BUCKET_NAME/$S3_AWS_BUCKET_NAME/g" S3file
 while read line; do
 	case "$line" in
 		s3://*)
