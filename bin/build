@@ -40,7 +40,7 @@ s3simple() {
   fi
   
   args=""
-  if [ ! -z "$AWS_SESSION_TOKEN-}" ]; then
+  if [ ! -z "${AWS_SESSION_TOKEN-}" ]; then
     args="-H x-amz-security-token:${AWS_SESSION_TOKEN}"
   fi
 
