@@ -30,7 +30,8 @@ when your archives have a significant size they can benefit of a faster download
 
 > Alternatively you can use `S3_AWS_ACCESS_KEY_ID` and `S3_AWS_SECRET_ACCESS_KEY` to avoid IAM
 > conflicts when using AWS containers to run `pack build`. If found, `S3_AWS_BUCKET_NAME` within the `S3file`
-> will get replaced with the variable's value in case it is set.
+> will get replaced with the variable's value in case it is set. You can also use AWS IAM temporary keys by
+> setting `AWS_SESSION_TOKEN` environment variable.
 
 You probably want to use an [IAM key](http://aws.amazon.com/iam/) with limited
 access. This code only requires `s3:GetObject` access to files.
