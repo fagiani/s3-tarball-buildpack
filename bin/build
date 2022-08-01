@@ -38,6 +38,11 @@ s3simple() {
   if [ -z "${AWS_SECRET_ACCESS_KEY-}" ]; then
     error "AWS_SECRET_ACCESS_KEY or S3_AWS_SECRET_ACCESS_KEY must be set in order to download a S3 tarball"
   fi
+  
+  args=""
+  if [ ! -z "$AWS_SESSION_TOKEN-}" ]; then
+    args="-H x-amz-security-token:${AWS_SESSION_TOKEN}"
+  fi
 
   local method md5
   method="GET"
@@ -49,7 +54,7 @@ s3simple() {
   local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${AWS_SECRET_ACCESS_KEY}" | openssl base64)
   local authorization="AWS ${AWS_ACCESS_KEY_ID}:${signature}"
 
-  curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"
+  curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error $args -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"
   tar -xvzf s3-tarball-buildpack-temp.tgz
   rm -f s3-tarball-buildpack-temp-tgz
 }
