@@ -56,7 +56,17 @@ s3simple() {
   local signature=$(echo -n "$string_to_sign" | openssl sha1 -binary -hmac "${AWS_SECRET_ACCESS_KEY}" | openssl base64)
   local authorization="AWS ${AWS_ACCESS_KEY_ID}:${signature}"
 
-  curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error $args -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"
+  local response=`curl -w '%{http_code}' -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error $args -H Date:"${date}" -H Authorization:"${authorization}" https://s3.amazonaws.com"${path}"`
+  if [ $response == 301 ]; then
+    path=${path#*/}
+    local bucket=${path%%/*}
+    path=${path#*/}
+    response=`curl -w '%{http_code}' -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error $args -H Date:"${date}" -H Authorization:"${authorization}" "https://$bucket.s3.amazonaws.com/$path"`
+  fi
+
+  if [ $response != 200 ]; then
+    error "AWS S3 response code was $response"
+  fi
   tar -xvzf s3-tarball-buildpack-temp.tgz
   rm -f s3-tarball-buildpack-temp-tgz
 }
