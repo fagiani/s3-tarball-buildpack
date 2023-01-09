@@ -67,7 +67,7 @@ s3simple() {
   if [ $response != 200 ]; then
     error "AWS S3 response code was $response"
   fi
-  tar -xvzf s3-tarball-buildpack-temp.tgz
+  tar --warning=no-unknown-keyword -xvzf s3-tarball-buildpack-temp.tgz
   rm -f s3-tarball-buildpack-temp-tgz
 }
 
@@ -79,7 +79,7 @@ httpsimple() {
   fi
 
   curl -o s3-tarball-buildpack-temp.tgz --fail --silent --show-error "${url}"
-  tar -xvzf s3-tarball-buildpack-temp.tgz
+  tar --warning=no-unknown-keyword -xvzf s3-tarball-buildpack-temp.tgz
   rm s3-tarball-buildpack-temp.tgz
 }
 
