@@ -1,8 +1,8 @@
-api = "0.5"
+api = "0.7"
 
 [buildpack]
 id = "fagiani/s3-tarball"
-version = "0.1.11"
+version = "0.1.122"
 name = "S3 Tarball Cloud Native Buildpack"
 homepage = "https://github.com/fagiani/s3-tarball-buildpack"
 description = "Downloads and writes files within tarballs from private S3 buckets in build time"
